@@ -46,6 +46,7 @@ import {
   ConversationShareModel,
   LlmProviderApiKeyModel,
   MemberModel,
+  MemoryModel,
   MessageModel,
   OrganizationModel,
   ScheduleTriggerModel,
@@ -242,10 +243,16 @@ const chatRoutes: FastifyPluginAsyncZod = async (fastify) => {
       let promptContext: UserSystemPromptContext | null = null;
       if (promptNeedsRendering(agent.systemPrompt)) {
         const userTeams = await TeamModel.getUserTeams(user.id);
+        const memoryContext = await MemoryModel.buildPromptContextMemories({
+          userId: user.id,
+          teamIds: userTeams.map((t) => t.id),
+          organizationId: user.organizationId,
+        });
         promptContext = buildUserSystemPromptContext({
           userName: user.name,
           userEmail: user.email,
           userTeams: userTeams.map((t) => t.name),
+          ...memoryContext,
         });
       }
 

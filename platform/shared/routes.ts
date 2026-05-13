@@ -455,6 +455,12 @@ export const RouteId = {
 
   // Invitation Routes
   CheckInvitation: "checkInvitation",
+
+  // Memory Routes
+  GetMemories: "getMemories",
+  CreateMemory: "createMemory",
+  UpdateMemory: "updateMemory",
+  DeleteMemory: "deleteMemory",
 } as const;
 
 export type RouteId = (typeof RouteId)[keyof typeof RouteId];

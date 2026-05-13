@@ -42,6 +42,7 @@ export * from "./mcp-server";
 export * from "./mcp-server-installation-request";
 export * from "./mcp-tool-call";
 export * from "./member";
+export * from "./memory";
 export * from "./message";
 export * from "./model";
 export * from "./oauth-client";

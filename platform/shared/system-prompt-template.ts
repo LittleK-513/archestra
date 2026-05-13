@@ -8,12 +8,18 @@ export const SYSTEM_PROMPT_VARIABLE_PATHS = {
   userName: `${USER_SYSTEM_PROMPT_CONTEXT_KEY}.name`,
   userEmail: `${USER_SYSTEM_PROMPT_CONTEXT_KEY}.email`,
   userTeams: `${USER_SYSTEM_PROMPT_CONTEXT_KEY}.teams`,
+  memoryUser: `memory.user`,
+  memoryTeam: `memory.team`,
+  memoryOrganization: `memory.organization`,
 } as const;
 
 export const SYSTEM_PROMPT_VARIABLE_EXPRESSIONS = {
   userName: toTemplateExpression(SYSTEM_PROMPT_VARIABLE_PATHS.userName),
   userEmail: toTemplateExpression(SYSTEM_PROMPT_VARIABLE_PATHS.userEmail),
   userTeams: toTemplateExpression(SYSTEM_PROMPT_VARIABLE_PATHS.userTeams),
+  memoryUser: toTemplateExpression(SYSTEM_PROMPT_VARIABLE_PATHS.memoryUser),
+  memoryTeam: toTemplateExpression(SYSTEM_PROMPT_VARIABLE_PATHS.memoryTeam),
+  memoryOrganization: toTemplateExpression(SYSTEM_PROMPT_VARIABLE_PATHS.memoryOrganization),
 } as const;
 
 /**
@@ -33,6 +39,18 @@ export const SYSTEM_PROMPT_VARIABLES = [
   {
     expression: SYSTEM_PROMPT_VARIABLE_EXPRESSIONS.userTeams,
     description: "Team names the user belongs to (array)",
+  },
+  {
+    expression: SYSTEM_PROMPT_VARIABLE_EXPRESSIONS.memoryUser,
+    description: "User-scoped durable memory (array of {key, value})",
+  },
+  {
+    expression: SYSTEM_PROMPT_VARIABLE_EXPRESSIONS.memoryTeam,
+    description: "Team-scoped durable memory (array of {key, value})",
+  },
+  {
+    expression: SYSTEM_PROMPT_VARIABLE_EXPRESSIONS.memoryOrganization,
+    description: "Organization-scoped durable memory (array of {key, value})",
   },
 ] as const;
 
@@ -138,20 +156,38 @@ export interface UserSystemPromptContext {
     email: string;
     teams: string[];
   };
+  memory?: {
+    user: Array<{ key: string; value: string }>;
+    team: Array<{ key: string; value: string }>;
+    organization: Array<{ key: string; value: string }>;
+  };
 }
 
 export function buildUserSystemPromptContext(params: {
   userName: string;
   userEmail: string;
   userTeams: string[];
+  user?: Array<{ key: string; value: string }>;
+  team?: Array<{ key: string; value: string }>;
+  organization?: Array<{ key: string; value: string }>;
 }): UserSystemPromptContext {
-  return {
+  const ctx: UserSystemPromptContext = {
     [USER_SYSTEM_PROMPT_CONTEXT_KEY]: {
       name: params.userName,
       email: params.userEmail,
       teams: params.userTeams,
     },
   };
+
+  if (params.user?.length || params.team?.length || params.organization?.length) {
+    ctx.memory = {
+      user: params.user ?? [],
+      team: params.team ?? [],
+      organization: params.organization ?? [],
+    };
+  }
+
+  return ctx;
 }
 
 export function getSystemPromptTemplateExpressions(params?: {
