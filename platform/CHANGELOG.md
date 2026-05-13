@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.46](https://github.com/archestra-ai/archestra/compare/platform-v1.2.45...platform-v1.2.46) (2026-05-13)
+
+
+### Performance Improvements
+
+* reduce MCP client ping hot path ([#4609](https://github.com/archestra-ai/archestra/issues/4609)) ([393b5ac](https://github.com/archestra-ai/archestra/commit/393b5ac8f9823a207627b729debaad659b2f307c))
+
 ## [1.2.45](https://github.com/archestra-ai/archestra/compare/platform-v1.2.44...platform-v1.2.45) (2026-05-12)
 
 
