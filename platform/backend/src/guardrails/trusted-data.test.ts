@@ -388,13 +388,42 @@ describe("trusted-data evaluation (provider-agnostic)", () => {
       });
     });
 
-    test("records a preexisting unsafe boundary when context starts untrusted", async () => {
+    test("still evaluates tool result policies when context starts untrusted", async () => {
+      // Create a block policy
+      await TrustedDataPolicyModel.create({
+        toolId,
+        conditions: [
+          { key: "emails[*].from", operator: "contains", value: "hacker" },
+        ],
+        action: "block_always",
+        description: "Block hacker emails",
+      });
+
+      const commonMessages: CommonMessage[] = [
+        { role: "user", content: "Summarize this thread" },
+        {
+          role: "tool",
+          toolCalls: [
+            {
+              id: "call_456",
+              name: "get_emails",
+              content: {
+                emails: [
+                  { from: "hacker@company.com", subject: "Suspicious" },
+                ],
+              },
+              isError: false,
+            },
+          ],
+        },
+      ];
+
       const result = await evaluateIfContextIsTrusted(
-        [{ role: "user", content: "Summarize this thread" }],
+        commonMessages,
         agentId,
         organizationId,
         undefined,
-        true,
+        true, // considerContextUntrusted = true
         "restrictive",
         { teamIds: [] },
         undefined,
@@ -402,8 +431,14 @@ describe("trusted-data evaluation (provider-agnostic)", () => {
         "inherited_from_parent",
       );
 
+      // Context should be untrusted due to considerContextUntrusted
       expect(result.contextIsTrusted).toBe(false);
-      expect(result.toolResultUpdates).toEqual({});
+      // Tool result policies should still be evaluated
+      expect(result.toolResultUpdates).toEqual({
+        call_456:
+          "[Content blocked by policy: Data blocked by policy: Block hacker emails]",
+      });
+      // Preexisting boundary should be preserved
       expect(result.unsafeContextBoundary).toEqual({
         kind: "preexisting_untrusted",
         reason: "inherited_from_parent",
